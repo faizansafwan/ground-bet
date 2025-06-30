@@ -16,17 +16,17 @@ export default function Dashboard() {
 
 
   useEffect(() => {
-    const loadSlots = async () => {
-      try {
-        const res = await getAllBets();
-        setSlotsData(res.data); // Store all existing filled slot data
-      } catch (err) {
-        console.error("Failed to fetch slots:", err);
-      }
-    };
-
-    loadSlots();
+    loadSlots(); // extract this for reuse
   }, []);
+  
+  const loadSlots = async () => {
+    try {
+      const res = await getAllBets();
+      setSlotsData(res.data);
+    } catch (err) {
+      console.error("Failed to fetch slots:", err);
+    }
+  };
 
   // Listen to screen width and set columns dynamically
   useEffect(() => {
@@ -55,7 +55,7 @@ export default function Dashboard() {
       <div className="m-2 p-3">
         <div className="flex-column md:flex gap-3">
           <div className="w-full md:w-1/2 p-3">
-            <AddForm />
+            <AddForm refreshSlots={loadSlots} />
           </div>
           
         </div>

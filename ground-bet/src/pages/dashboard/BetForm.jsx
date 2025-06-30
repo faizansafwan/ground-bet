@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { addBet } from "../../api/bets";
+import { toast } from "react-toastify";
 
-export default function AddForm() {
+export default function AddForm({refreshSlots}) {
   const [errors, setErrors] = useState({});
   const [slots, setSlots] = useState([]);
   const [formData, setFormData] = useState({
@@ -35,7 +36,7 @@ export default function AddForm() {
   };
 
   const handleSubmit = async (e) => {
-    // e.preventDefault(); // Prevent page reload
+    e.preventDefault(); // Prevent page reload
     const { firstName, lastName, contact, address, slots: slotCount } = formData;
   
     // Reset errors
@@ -52,6 +53,7 @@ export default function AddForm() {
   
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
+      e.preventDefault();
       return;
     }
   
@@ -79,6 +81,8 @@ export default function AddForm() {
           slots: betPayload.slot_count,
         }),
       ]);
+      toast.success("Bet added successfully!");
+      await refreshSlots(); // ✅ refresh slot grid without reloading
       setShowForm(false);
       setFormData({
         firstName: "",
@@ -87,10 +91,10 @@ export default function AddForm() {
         address: "",
         slots: "",
       });
-      console.log("Bet added successfully", res.data);
+      
     } catch (error) {
       console.error("Error submitting bet:", error);
-      setErrors({ general: "Something went wrong. Please try again." });
+      toast.error("Something went wrong. Please try again.");
     }
   };
   
