@@ -34,6 +34,22 @@ export default function Dashboard() {
     return 1;
   };
 
+  const getGroupedBets = (data) => {
+    const grouped = {};
+  
+    data.forEach((bet) => {
+      const key = `${bet.first_name}|${bet.last_name}|${bet.contact_no}|${bet.address}`;
+      if (!grouped[key]) {
+        grouped[key] = { ...bet, slot_count: 1 };
+      } else {
+        grouped[key].slot_count += 1;
+      }
+    });
+  
+    return Object.values(grouped);
+  };
+  
+
   
 
   useEffect(() => {
@@ -152,6 +168,33 @@ export default function Dashboard() {
                 setSelectedSlot={setSelectedSlot}
               />
             )}
+
+            {/* Render grouped bets in a table */}
+            <div className="mt-6 p-4 overflow-x-auto bg-white shadow-md rounded">
+              <h2 className="text-lg font-semibold mb-4 text-gray-800">Bets Summary</h2>
+              <table className="min-w-full text-sm text-left border border-gray-300">
+                <thead className="bg-gray-100 text-gray-700">
+                  <tr>
+                    <th className="px-4 py-2 border">First Name</th>
+                    <th className="px-4 py-2 border">Last Name</th>
+                    <th className="px-4 py-2 border">Contact</th>
+                    <th className="px-4 py-2 border">Address</th>
+                    <th className="px-4 py-2 border">Slot Count</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {getGroupedBets(slotsData).map((bet, index) => (
+                    <tr key={index} className="hover:bg-gray-50">
+                      <td className="px-4 py-2 border">{bet.first_name}</td>
+                      <td className="px-4 py-2 border">{bet.last_name}</td>
+                      <td className="px-4 py-2 border">{bet.contact_no}</td>
+                      <td className="px-4 py-2 border">{bet.address}</td>
+                      <td className="px-4 py-2 border text-center">{bet.slot_count}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
           </div>
         </div>
