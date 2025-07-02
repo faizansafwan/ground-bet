@@ -50,7 +50,13 @@ export default function AddForm({refreshSlots}) {
     } else if (!/^\d{10}$/.test(contact)) {
       newErrors.contact = "Contact number must be exactly 10 digits.";
     }
-    if (!slotCount) newErrors.slots = "Please select number of slots.";
+    
+    if (!slotCount) {
+      newErrors.slots = "Please select number of slots.";
+    } else if (parseInt(slotCount, 10) > 10) {
+      newErrors.slots = "Maximum allowed slots is 10.";
+    }
+    
   
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -143,7 +149,11 @@ export default function AddForm({refreshSlots}) {
               className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 
               focus:ring-blue-400 transition" />
 
-            <select name="slots" value={formData.slots} onChange={handleChange}
+            <input name="slots" type="number" placeholder="Number of Bets" value={formData.slots} onChange={handleChange}
+              className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 
+              focus:ring-blue-400 transition" />
+
+            {/* <select name="slots" value={formData.slots} onChange={handleChange}
                className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 
                focus:ring-blue-400 transition">
               <option value="">Select number of Bets</option>
@@ -152,13 +162,13 @@ export default function AddForm({refreshSlots}) {
                   {i + 1}
                 </option>
               ))}
-            </select>
+            </select> */}
             {errors.slots && <p className="text-red-500 text-sm">{errors.slots}</p>}
 
             {errors.general && <p className="text-red-500 text-sm mt-2">{errors.general}</p>}
             <div className="flex justify-between gap-4">
-              <button type="submit" disabled={loading} className={`w-full text-white py-2 rounded-md transition ease-in-out
-              duration-300 ${loading ? "bg-blue-300 cursor-not-allowed" : "bg-blue-400 hover:bg-blue-500"}`} >
+              <button type="submit" disabled={loading} className={`w-full text-white py-2 rounded-md cursor-pointer 
+              transition ease-in-out duration-300 ${loading ? "bg-blue-300 cursor-not-allowed" : "bg-blue-400 hover:bg-blue-500"}`} >
                 {loading ? "Submitting..." : "Add Bet"}
               </button>
 
