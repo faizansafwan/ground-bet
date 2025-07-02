@@ -23,6 +23,12 @@ app.get('/', (req, res) => {
     res.send('Ground Bet API is running...');
 });
 
+// in your Express.js backend
+app.get("/api/ping", (req, res) => {
+    res.send("pong");
+});
+  
+
 app.listen( port, () => {
     console.log(`Server is running on http://localhost:${port}`);
 });
