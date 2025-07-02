@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 
 export default function AddForm({refreshSlots}) {
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
   const [slots, setSlots] = useState([]);
   const [formData, setFormData] = useState({
     firstName: "",
@@ -59,6 +60,7 @@ export default function AddForm({refreshSlots}) {
   
     // All validations passed
     setErrors({}); // Clear old errors
+    setLoading(true); // ⏳ Start loading
   
     const betPayload = {
       first_name: firstName,
@@ -95,6 +97,8 @@ export default function AddForm({refreshSlots}) {
     } catch (error) {
       console.error("Error submitting bet:", error);
       toast.error("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false); // ✅ Stop loading regardless of success or failure
     }
   };
   
@@ -153,12 +157,13 @@ export default function AddForm({refreshSlots}) {
 
             {errors.general && <p className="text-red-500 text-sm mt-2">{errors.general}</p>}
             <div className="flex justify-between gap-4">
-              <button type="submit" className="w-full bg-blue-400 text-white py-2 rounded-md hover:bg-blue-500 
-              cursor-pointer transition ease-in-out duration-300" >
-                Add Bet
+              <button type="submit" disabled={loading} className={`w-full text-white py-2 rounded-md transition ease-in-out
+              duration-300 ${loading ? "bg-blue-300 cursor-not-allowed" : "bg-blue-400 hover:bg-blue-500"}`} >
+                {loading ? "Submitting..." : "Add Bet"}
               </button>
+
               <button type="button" onClick={handleHideForm} className="w-full bg-gray-300 text-gray-700 py-2 rounded-md 
-              cursor-pointer hover:bg-gray-400 transition ease-in-out duration-300" >
+                cursor-pointer hover:bg-gray-400 transition ease-in-out duration-300" >
                 Cancel
               </button>
             </div>
