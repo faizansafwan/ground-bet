@@ -13,6 +13,10 @@ export default function Dashboard() {
   const [modalAnimation, setModalAnimation] = useState("animate-fade-in-scale");
   const [isEditing, setIsEditing] = useState(false);
   const [editedSlot, setEditedSlot] = useState(null);
+  const [hasError, setHasError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+
 
   const getOverlayOpacity = (count) => {
     if (count > 1600) return 0.05;
@@ -58,10 +62,15 @@ export default function Dashboard() {
   
   const loadSlots = async () => {
     try {
+      setHasError(false); // reset before fetch
+      setIsLoading(true); // start loading
       const res = await getAllBets();
       setSlotsData(res.data);
     } catch (err) {
       console.error("Failed to fetch slots:", err);
+      setHasError(true); // set error state
+    } finally {
+      setIsLoading(false); // stop loading
     }
   };
 
@@ -69,10 +78,11 @@ export default function Dashboard() {
   useEffect(() => {
     const updateColumns = () => {
       const width = window.innerWidth;
-      if (width >= 1024) setColumns(30);
-      else if (width >= 768) setColumns(20);
-      else if (width >= 640) setColumns(15);
-      else setColumns(10);
+      if (width >= 1280) setColumns(30);
+      else if (width >= 1024) setColumns(26);
+      else if (width >= 768) setColumns(18);
+      else if (width >= 640) setColumns(14);
+      else setColumns(8);
     };
 
     updateColumns();
@@ -122,79 +132,97 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Slot Grid */}
-            <div className="mt-3 p-3 gap-1" style={{ display: "grid", gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
-              {[...Array(totalSlots)].map((_, i) => {
-                const slotId = i + 1;
-                const slotData = slotsData.find((slot) => slot.id === slotId);
-                const isFilled = !!slotData;
-                const slotTitle = isFilled
-                  ? `${slotData.first_name} ${slotData.last_name}`
-                  : `Slot ${slotId}`;
+            { isLoading ? (
+              <div className="flex justify-center items-center mt-10">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-400 border-solid"></div>
+                <span className="ml-4 text-blue-400 text-lg">Loading...</span>
+              </div>
+            ) : hasError ? (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mt-4">
+                <strong className="font-bold">Error: </strong>
+                <span className="block sm:inline">Failed to load data. Please reload and try again.</span>
+                <button onClick={loadSlots}  className="ml-4 px-3 py-1 bg-red-500 cursor-pointer text-white rounded 
+                  hover:bg-red-600 transition" >Retry</button>
+              </div>
+            ) : (
+              <>
+                {/* Slot Grid */}
+                <div className="mt-3 p-3 gap-1" style={{ display: "grid", gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
+                  {[...Array(totalSlots)].map((_, i) => {
+                    const slotId = i + 1;
+                    const slotData = slotsData.find((slot) => slot.id === slotId);
+                    const isFilled = !!slotData;
+                    const slotTitle = isFilled
+                      ? `${slotData.first_name} ${slotData.last_name}`
+                      : `Slot ${slotId}`;
 
-                return (
-                  <div
-                    key={slotId}
-                    title={slotTitle}
-                    onClick={() => {
-                      if (slotData) {
-                        setSelectedSlot(slotData);
-                        setEditedSlot({ ...slotData });
-                        setModalAnimation("animate-fade-in-scale");
-                        setIsModalOpen(true);
-                      }
-                    }}
-                    className={`w-full aspect-square flex items-center justify-center rounded-sm transition-colors hover:border hover:border-2 hover:shadow-sm cursor-pointer duration-300 ${
-                      isFilled ? "hover:border-gray-200 bg-gray-600" : "bg-gray-300"
-                    }`} >
-                    {slotId}
-                  </div>
-                );
-              })}
+                    return (
+                      <div
+                        key={slotId}
+                        title={slotTitle}
+                        onClick={() => {
+                          if (slotData) {
+                            setSelectedSlot(slotData);
+                            setEditedSlot({ ...slotData });
+                            setModalAnimation("animate-fade-in-scale");
+                            setIsModalOpen(true);
+                          }
+                        }}
+                        className={`w-full aspect-square flex items-center justify-center rounded-sm transition-colors hover:border hover:border-2 hover:shadow-sm cursor-pointer duration-300 ${
+                          isFilled ? "hover:border-gray-200 bg-gray-600" : "bg-gray-300"
+                        }`} >
+                        {slotId}
+                      </div>
+                    );
+                  })}
 
-            </div>
+                </div>
 
-            {isModalOpen && selectedSlot && (
-              <SlotModal
-                selectedSlot={selectedSlot}
-                editedSlot={editedSlot}
-                setEditedSlot={setEditedSlot}
-                isEditing={isEditing}
-                setIsEditing={setIsEditing}
-                setIsModalOpen={setIsModalOpen}
-                setSlotsData={setSlotsData}
-                updateBetById={updateBetById}
-                deleteBetById={deleteBetById}
-                setSelectedSlot={setSelectedSlot}
-              />
+                {isModalOpen && selectedSlot && (
+                  <SlotModal
+                    selectedSlot={selectedSlot}
+                    editedSlot={editedSlot}
+                    setEditedSlot={setEditedSlot}
+                    isEditing={isEditing}
+                    setIsEditing={setIsEditing}
+                    setIsModalOpen={setIsModalOpen}
+                    setSlotsData={setSlotsData}
+                    updateBetById={updateBetById}
+                    deleteBetById={deleteBetById}
+                    setSelectedSlot={setSelectedSlot}
+                  />
+                )}
+
+                {/* Render grouped bets in a table */}
+                <div className="mt-6 p-4 overflow-x-auto bg-white shadow-md rounded">
+                  <h2 className="text-lg font-semibold mb-4 text-gray-800">Bets Summary</h2>
+                  <table className="min-w-full text-sm text-left border border-gray-300">
+                    <thead className="bg-gray-100 text-gray-700">
+                      <tr>
+                        <th className="px-4 py-2 border">First Name</th>
+                        <th className="px-4 py-2 border">Last Name</th>
+                        <th className="px-4 py-2 border">Contact</th>
+                        <th className="px-4 py-2 border">Address</th>
+                        <th className="px-4 py-2 border">Slot Count</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {getGroupedBets(slotsData).map((bet, index) => (
+                        <tr key={index} className="hover:bg-gray-50">
+                          <td className="px-4 py-2 border">{bet.first_name}</td>
+                          <td className="px-4 py-2 border">{bet.last_name}</td>
+                          <td className="px-4 py-2 border">{bet.contact_no}</td>
+                          <td className="px-4 py-2 border">{bet.address}</td>
+                          <td className="px-4 py-2 border text-center">{bet.slot_count}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             )}
 
-            {/* Render grouped bets in a table */}
-            <div className="mt-6 p-4 overflow-x-auto bg-white shadow-md rounded">
-              <h2 className="text-lg font-semibold mb-4 text-gray-800">Bets Summary</h2>
-              <table className="min-w-full text-sm text-left border border-gray-300">
-                <thead className="bg-gray-100 text-gray-700">
-                  <tr>
-                    <th className="px-4 py-2 border">First Name</th>
-                    <th className="px-4 py-2 border">Last Name</th>
-                    <th className="px-4 py-2 border">Contact</th>
-                    <th className="px-4 py-2 border">Address</th>
-                    <th className="px-4 py-2 border">Slot Count</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {getGroupedBets(slotsData).map((bet, index) => (
-                    <tr key={index} className="hover:bg-gray-50">
-                      <td className="px-4 py-2 border">{bet.first_name}</td>
-                      <td className="px-4 py-2 border">{bet.last_name}</td>
-                      <td className="px-4 py-2 border">{bet.contact_no}</td>
-                      <td className="px-4 py-2 border">{bet.address}</td>
-                      <td className="px-4 py-2 border text-center">{bet.slot_count}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            
 
           </div>
         </div>
