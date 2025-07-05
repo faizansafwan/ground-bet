@@ -19,24 +19,12 @@ export default function Dashboard() {
 
 
   const getOverlayOpacity = (count) => {
-    if (count > 1600) return 0.05;
-    if (count > 1500) return 0.2;
-    if (count > 1400) return 0.25;
-    if (count > 1300) return 0.35;
-    if (count > 1200) return 0.4;
-    if (count > 1100) return 0.45;
-    if (count > 1000) return 0.5;
-    if (count > 900) return 0.55;
-    if (count > 800) return 0.6;
-    if (count > 600) return 0.65;
-    if (count > 500) return 0.7;
-    if (count > 400) return 0.75;
-    if (count > 300) return 0.8;
-    if (count > 200) return 0.85;
-    if (count > 100) return 0.9;
-    if (count > 50) return 0.95;
-    return 1;
+    const minOpacity = 0.05; // when all slots are filled
+    const maxOpacity = 1;    // when no slots are filled
+    const ratio = count / totalSlots;
+    return maxOpacity - ratio * (maxOpacity - minOpacity);
   };
+  
 
   const getGroupedBets = (data) => {
     const grouped = {};
