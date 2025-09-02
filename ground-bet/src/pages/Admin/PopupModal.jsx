@@ -91,7 +91,7 @@ export default function PopupModal({ data, onClose }) {
         <div className="flex-grow flex items-center justify-center mb-13">
           <span className="font-bold">
             <span
-              className="px-2 py-2 rounded-lg inline-block font-bold text-white text-xl"
+              className="px-2 py-2 rounded-lg inline-block font-bold text-white text-2xl"
               
             >
               Rs. {(donation || 0).toLocaleString("en-IN", {
@@ -103,9 +103,9 @@ export default function PopupModal({ data, onClose }) {
         </div>
 
         {/* Bottom content - Fixed at the bottom */}
-        <div className="relative z-20 flex flex-col items-center text-center text-white flex-shrink-0 p-4 mb-4">
+        <div className="relative z-20 flex flex-col items-center text-center text-white flex-shrink-0 p-4 mb-2">
   	      
-          <p className={`uppercase mt-2 text-md font-bold`}>WE SINCERELY APPRECIATE YOUR GENEROUS CONTRIBUTION</p>
+          <p className={`uppercase mt-1 text-md font-bold`}>WE SINCERELY APPRECIATE YOUR GENEROUS CONTRIBUTION</p>
           <p className={`uppercase text-md font-bold`}>YOUR SUPPORT IS TRULY VALUED</p>
           <p className={`uppercase font-semibold mt-4 text-${textSize}`}>JAZAKUMULLAHU KHAIRA FOR YOUR CONTRIBUTION</p>
         </div>

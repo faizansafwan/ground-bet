@@ -72,7 +72,7 @@ export default function AddForm({refreshSlots}) {
       newErrors.donation = "Please enter a valid donation amount.";
     }
     
-    else if (parseInt(slotCount, 10) > 10) {
+    else if (parseInt(slotCount, 10) > 100) {
       newErrors.slots = "Maximum allowed slots is 10.";
     }
     

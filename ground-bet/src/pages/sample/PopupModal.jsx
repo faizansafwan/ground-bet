@@ -103,7 +103,7 @@ export default function PopupModal({ data, onClose }) {
         </div>
 
         {/* Bottom content - Fixed at the bottom */}
-        <div className="relative z-20 flex flex-col items-center text-center text-white flex-shrink-0 p-4 mb-4">
+        <div className="relative z-20 flex flex-col items-center text-center text-white flex-shrink-0 p-4 mb-1">
   	      
           <p className={`uppercase mt-2 text-md font-bold`}>WE SINCERELY APPRECIATE YOUR GENEROUS CONTRIBUTION</p>
           <p className={`uppercase text-md font-bold`}>YOUR SUPPORT IS TRULY VALUED</p>
