@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import Header from "../../components/Header";
 import AddForm from "./BetForm";
-import { getAllBets, deleteBetById, updateBetById } from "../../api/bets";
+import { getAllBets, deleteBetById, updateBetById, getTotalDonation } from "../../api/bets";
 import SlotModal from "./BetUpdateForm";
 import background from "../../assets/background.jpg";
+import DonationProgress from "../../components/DonationProgress";
 
 export default function Dashboard() {
   const [slotsData, setSlotsData] = useState([]); // data from backend
@@ -15,6 +16,7 @@ export default function Dashboard() {
   const [editedSlot, setEditedSlot] = useState(null);
   const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [sumOfDonation, setSumOfDonation] = useState(0);
 
 
 
@@ -62,6 +64,25 @@ export default function Dashboard() {
     }
   };
 
+
+  useEffect(() => {
+    totalDonation(); // extract this for reuse
+  }, []);
+  
+  const totalDonation = async () => {
+    try {
+      setHasError(false); // reset before fetch
+      setIsLoading(true); // start loading
+      const res = await getTotalDonation();
+      setSumOfDonation(res.data);
+    } catch (err) {
+      console.error("Failed to fetch slots:", err);
+      setHasError(true); // set error state
+    } finally {
+      setIsLoading(false); // stop loading
+    }
+  };
+
   // Listen to screen width and set columns dynamically
   useEffect(() => {
     const updateColumns = () => {
@@ -90,7 +111,7 @@ export default function Dashboard() {
       minHeight: "100vh", }} >
         <div style={{ backgroundColor: `rgba(255, 255, 255, ${overlayOpacity})`, minHeight: "100vh",
          transition: "background-color 0.5s ease", }}>
-          <Header />
+          {/* <Header /> */}
           
           <div className="m-2 p-3 ">
             <div className="flex-column md:flex gap-3">
@@ -134,6 +155,7 @@ export default function Dashboard() {
               </div>
             ) : (
               <>
+                
                 {/* Slot Grid */}
                 <div className="mt-3 p-3 gap-1" style={{ display: "grid", gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
                   {[...Array(totalSlots)].map((_, i) => {
