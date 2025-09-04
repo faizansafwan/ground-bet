@@ -209,7 +209,108 @@ export const getTotalDonation = async (req, res) => {
       .json({ message: "Failed to fetch total donation", error });
   }
 };
+
+
+
+export const deleteMultipleBets = async (req, res) => {
+  const { ids } = req.body;
+
+  try {
+    // Validate input
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ message: "Please provide an array of IDs to delete" });
+    }
+
+    // Convert all IDs to numbers and validate
+    const numericIds = ids.map(id => parseInt(id)).filter(id => !isNaN(id) && id > 0);
+    
+    if (numericIds.length === 0) {
+      return res.status(400).json({ message: "No valid IDs provided" });
+    }
+
+    // First, check which IDs actually exist
+    const placeholders = numericIds.map(() => '?').join(',');
+    const [existingBets] = await db.query(
+      `SELECT id FROM bets WHERE id IN (${placeholders})`,
+      numericIds
+    );
+
+    const existingIds = existingBets.map(bet => bet.id);
+    const nonExistingIds = numericIds.filter(id => !existingIds.includes(id));
+
+    if (existingIds.length === 0) {
+      return res.status(404).json({ 
+        message: "No bets found with the provided IDs",
+        nonExistingIds: numericIds
+      });
+    }
+
+    // Delete only the existing bets
+    const [result] = await db.query(
+      `DELETE FROM bets WHERE id IN (${placeholders})`,
+      numericIds
+    );
+
+    // ✅ Emit delete event for all successfully deleted IDs
+    if (io) {
+      existingIds.forEach(id => {
+        io.emit("betDeleted", id);
+      });
+    }
+
+    const response = { 
+      message: `${result.affectedRows} bet(s) deleted successfully`,
+      deletedCount: result.affectedRows
+    };
+
+    // Add info about non-existing IDs if any
+    if (nonExistingIds.length > 0) {
+      response.nonExistingIds = nonExistingIds;
+      response.warning = `${nonExistingIds.length} ID(s) did not exist`;
+    }
+
+    res.status(200).json(response);
+  } catch (error) {
+    console.error("Error deleting multiple bets:", error);
+    res.status(500).json({ message: "Error deleting bets", error });
+  }
+};
   
+
+
+export const getDonationsByPerson = async (req, res) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT 
+        first_name,
+        last_name,
+        contact_no,
+        address,
+        MAX(slot_count) AS slot_count, -- take the slot_count from any row (they’re all same)
+        GROUP_CONCAT(donation ORDER BY id ASC) AS donations,
+        SUM(donation) AS total_donation
+      FROM bets
+      GROUP BY first_name, last_name, contact_no, address
+      ORDER BY first_name, last_name
+    `);
+
+    const formattedRows = rows.map(row => ({
+      first_name: row.first_name,
+      last_name: row.last_name,
+      contact_no: row.contact_no,
+      address: row.address,
+      slot_count: row.slot_count, // ✅ take from first record
+      donations: row.donations ? row.donations.split(',').map(Number) : [],
+      total_donation: row.total_donation
+    }));
+
+    res.status(200).json(formattedRows);
+  } catch (error) {
+    console.error("Error fetching donations by person:", error);
+    res.status(500).json({ message: "Failed to fetch donations", error });
+  }
+};
+
 
 // inside addBet
 
