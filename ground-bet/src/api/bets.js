@@ -13,6 +13,10 @@ export const addBet = async (betData) => {
   export const getTotalDonation = async () => {
     return await axios.get(`${API_URL}/donation`);
   };
+
+  export const getDonationByPerson = async () => {
+    return await axios.get(`${API_URL}/person`);
+  };
   
   export const updateBetById = (id, betData) => {
     return axios.put(`${API_URL}/${id}`, betData);
